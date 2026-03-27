@@ -1,7 +1,31 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { products } from '../services/mockData';
+import { deleteProduct, fetchInventory, fetchProducts } from '../services/api';
 
 function ProductManagementPage() {
+  const [products, setProducts] = useState([]);
+  const [inventory, setInventory] = useState([]);
+
+  const load = async () => {
+    const [productData, inventoryData] = await Promise.all([fetchProducts(), fetchInventory()]);
+    setProducts(productData);
+    setInventory(inventoryData);
+  };
+
+  useEffect(() => {
+    load().catch(() => {
+      setProducts([]);
+      setInventory([]);
+    });
+  }, []);
+
+  const stockByProductId = new Map(inventory.map((item) => [item.productId, item.stockQuantity]));
+
+  const handleDelete = async (id) => {
+    await deleteProduct(id);
+    await load();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -23,9 +47,10 @@ function ProductManagementPage() {
               <tr key={product.id} className="border-t border-white/10 text-sm text-gray-200">
                 <td className="px-4 py-3">{product.name}</td>
                 <td className="px-4 py-3">${product.price}</td>
-                <td className="px-4 py-3">{product.stock}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3">{stockByProductId.get(product.id) ?? 0}</td>
+                <td className="px-4 py-3 space-x-3">
                   <Link to={`/admin/products/${product.id}/edit`} className="text-blue-300 hover:text-blue-200">Edit</Link>
+                  <button type="button" className="text-red-300 hover:text-red-200" onClick={() => handleDelete(product.id)}>Delete</button>
                 </td>
               </tr>
             ))}

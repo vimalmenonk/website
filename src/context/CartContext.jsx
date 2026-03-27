@@ -1,29 +1,54 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { addCartItem, fetchCart, removeCartItem } from '../services/api';
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
 
-  const addToCart = (product) => {
-    setItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-        );
-      }
-      return [...prev, { ...product, qty: 1 }];
-    });
+  const refreshCart = async () => {
+    if (!localStorage.getItem('glowvitra_token')) {
+      setItems([]);
+      return;
+    }
+
+    try {
+      const data = await fetchCart();
+      setItems(data);
+    } catch {
+      setItems([]);
+    }
   };
 
-  const updateQty = (id, qty) => {
+  useEffect(() => {
+    refreshCart();
+  }, []);
+
+  const addToCart = async (product) => {
+    await addCartItem(product.id, 1);
+    await refreshCart();
+  };
+
+  const updateQty = async (productId, qty) => {
     if (qty < 1) return;
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, qty } : item)));
+
+    const item = items.find((entry) => entry.productId === productId);
+    if (!item) return;
+
+    await removeCartItem(productId);
+    await addCartItem(productId, qty);
+    await refreshCart();
   };
 
-  const removeItem = (id) => setItems((prev) => prev.filter((item) => item.id !== id));
-  const clearCart = () => setItems([]);
+  const removeItem = async (productId) => {
+    await removeCartItem(productId);
+    await refreshCart();
+  };
+
+  const clearCart = async () => {
+    await Promise.all(items.map((item) => removeCartItem(item.productId)));
+    await refreshCart();
+  };
 
   const totals = useMemo(() => {
     const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -33,7 +58,7 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const value = useMemo(
-    () => ({ items, addToCart, updateQty, removeItem, clearCart, ...totals }),
+    () => ({ items, addToCart, updateQty, removeItem, clearCart, refreshCart, ...totals }),
     [items, totals]
   );
 

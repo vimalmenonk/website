@@ -1,8 +1,15 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { products } from '../services/mockData';
+import { fetchProducts } from '../services/api';
 
 function HomePage() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    fetchProducts().then((data) => setProducts(data.slice(0, 4))).catch(() => setProducts([]));
+  }, []);
+
   return (
     <div className="space-y-12">
       <section className="glass-card relative overflow-hidden p-8 md:p-12">

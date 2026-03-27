@@ -1,56 +1,33 @@
-# Glowvitra Frontend
+# Glowvitra Full Stack
 
-Glowvitra is a complete React + Vite ecommerce frontend focused on immersive ambience products. The UI is designed with a dark neon style and includes both customer and admin-facing pages ready for API integration.
+Glowvitra is a full-stack ecommerce app with a React frontend, ASP.NET Core backend, and SQL Server database.
 
 ## Tech Stack
 
-- React (Vite)
-- Tailwind CSS
-- React Router
-- Axios
+- Frontend: React (Vite), Tailwind CSS, React Router, Axios
+- Backend: ASP.NET Core 8 Web API, Entity Framework Core, JWT Auth
+- Database: Microsoft SQL Server
 
-## Run Locally
+## Database Setup
 
-```bash
-npm install
-npm run dev
+- Run `database/database.sql` in SQL Server.
+- Update backend connection string in `backend/appsettings.json`:
+
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=YOUR_SQL_SERVER;Database=GlowvitraDb;Trusted_Connection=True;TrustServerCertificate=True;"
+}
 ```
 
-## Folder Structure
+## Backend Configuration
 
-```text
-src/
-├── components/
-├── context/
-├── pages/
-├── services/
-│   └── api.js
-├── App.jsx
-└── main.jsx
-```
+- DbContext is configured in `backend/Data/AppDbContext.cs`.
+- SQL Server is configured in `backend/Program.cs` using `UseSqlServer`.
+- Migrations are enabled through Entity Framework Core packages and applied on startup via `Database.Migrate()`.
 
-## Included Pages
+## Run Full Project
 
-- Homepage
-- Product Listing Page
-- Product Details Page
-- Cart Page
-- Checkout Page
-- Login / Signup Page
-- User Account Page
-- Admin Login Page
-- Admin Dashboard
-- Product Management Page
-- Add/Edit Product Page
-- Inventory Management Page
-
-## Notes
-
-- Mock authentication and cart state are implemented with Context API.
-- API structure is pre-configured at `http://localhost:5000/api`.
-- No backend or database is included.
-
-## Backend Setup
+1. Start backend
 
 ```bash
 cd backend
@@ -58,4 +35,28 @@ dotnet restore
 dotnet run
 ```
 
-API base URL: `http://localhost:5086/api`
+2. Start frontend
+
+```bash
+npm install
+npm run dev
+```
+
+Frontend: `http://localhost:5173`  
+Backend API: `http://localhost:5086/api`
+
+## Credentials
+
+Admin:  
+admin@glowvitra.com / Admin@123
+
+User:  
+user@glowvitra.com / User@123
+
+## Implemented API Connections
+
+- Auth: Login + Signup connected to `/api/auth`
+- Products: Listing + Details + Admin CRUD connected to `/api/products`
+- Cart: Add/Remove/Get connected to `/api/cart`
+- Orders: Create + Order History connected to `/api/orders`
+- Inventory: Admin inventory tracking connected to `/api/inventory`

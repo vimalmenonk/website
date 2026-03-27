@@ -1,12 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import { products } from '../services/mockData';
+import { fetchProducts } from '../services/api';
 
 function ProductListingPage() {
   const [query, setQuery] = useState('');
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    fetchProducts().then(setProducts).catch(() => setProducts([]));
+  }, []);
+
   const filtered = useMemo(
     () => products.filter((product) => product.name.toLowerCase().includes(query.toLowerCase())),
-    [query]
+    [products, query]
   );
 
   return (
