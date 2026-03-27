@@ -49,3 +49,13 @@ src/
 - Mock authentication and cart state are implemented with Context API.
 - API structure is pre-configured at `http://localhost:5000/api`.
 - No backend or database is included.
+
+## Backend Setup
+
+```bash
+cd backend
+dotnet restore
+dotnet run
+```
+
+API base URL: `http://localhost:5086/api`
