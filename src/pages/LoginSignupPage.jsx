@@ -5,17 +5,24 @@ import { useAuth } from '../context/AuthContext';
 function LoginSignupPage() {
   const [isSignup, setIsSignup] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
   const { login, signup } = useAuth();
   const navigate = useNavigate();
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    if (isSignup) {
-      signup({ name: form.name, email: form.email });
-    } else {
-      login({ email: form.email });
+    setError('');
+
+    try {
+      if (isSignup) {
+        await signup({ name: form.name, email: form.email, password: form.password });
+      } else {
+        await login({ email: form.email, password: form.password });
+      }
+      navigate('/account');
+    } catch {
+      setError('Authentication failed. Please verify your credentials.');
     }
-    navigate('/account');
   };
 
   return (
@@ -47,6 +54,7 @@ function LoginSignupPage() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           required
         />
+        {error && <p className="text-sm text-red-300">{error}</p>}
         <button type="submit" className="neon-btn w-full">{isSignup ? 'Sign Up' : 'Login'}</button>
       </form>
       <button type="button" onClick={() => setIsSignup((prev) => !prev)} className="text-blue-300 hover:text-blue-200">

@@ -22,10 +22,10 @@ function CartPage() {
                   type="number"
                   min="1"
                   value={item.qty}
-                  onChange={(e) => updateQty(item.id, Number(e.target.value))}
+                  onChange={(e) => updateQty(item.productId, Number(e.target.value))}
                   className="w-20 rounded-lg border border-white/20 bg-transparent px-3 py-2"
                 />
-                <button type="button" onClick={() => removeItem(item.id)} className="text-red-300 hover:text-red-200">Remove</button>
+                <button type="button" onClick={() => removeItem(item.productId)} className="text-red-300 hover:text-red-200">Remove</button>
               </div>
             </div>
           ))

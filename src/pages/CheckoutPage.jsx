@@ -1,14 +1,24 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { createOrder } from '../services/api';
 
 function CheckoutPage() {
-  const { total, clearCart } = useCart();
+  const { total, refreshCart } = useCart();
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const submitOrder = (e) => {
+  const submitOrder = async (e) => {
     e.preventDefault();
-    clearCart();
-    navigate('/account');
+    setError('');
+
+    try {
+      await createOrder();
+      await refreshCart();
+      navigate('/account');
+    } catch {
+      setError('Unable to place order. Ensure cart has in-stock items and you are logged in.');
+    }
   };
 
   return (
@@ -25,6 +35,7 @@ function CheckoutPage() {
           <span className="text-gray-300">Order total</span>
           <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
         </div>
+        {error && <p className="md:col-span-2 text-sm text-red-300">{error}</p>}
         <button type="submit" className="neon-btn md:col-span-2">Place Order</button>
       </form>
     </div>
