@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5086/api';
+
 const api = axios.create({
-  baseURL: 'http://localhost:5086/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -12,6 +14,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
@@ -36,7 +39,9 @@ export async function fetchProductById(id) {
 }
 
 export async function login(payload) {
+  console.log('[API] POST /auth/login', { email: payload.email, url: `${API_BASE_URL}/auth/login` });
   const { data } = await api.post('/auth/login', payload);
+  console.log('[API] /auth/login success', { role: data.role, email: data.email });
   return data;
 }
 

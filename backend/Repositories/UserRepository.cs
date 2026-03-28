@@ -6,8 +6,11 @@ namespace Glowvitra.Api.Repositories;
 
 public class UserRepository(AppDbContext dbContext) : IUserRepository
 {
-    public Task<User?> GetByEmailAsync(string email) =>
-        dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+    public Task<User?> GetByEmailAsync(string email)
+    {
+        var normalizedEmail = email.Trim().ToLower();
+        return dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+    }
 
     public Task<User?> GetByIdAsync(int id) =>
         dbContext.Users.FindAsync(id).AsTask();

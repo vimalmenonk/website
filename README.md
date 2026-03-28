@@ -60,3 +60,42 @@ user@glowvitra.com / User@123
 - Cart: Add/Remove/Get connected to `/api/cart`
 - Orders: Create + Order History connected to `/api/orders`
 - Inventory: Admin inventory tracking connected to `/api/inventory`
+
+## Fixes Applied
+
+### UI alignment changes
+
+- Updated the shared dark theme to match the reference aesthetic (`#0B0B0F`) with neon gradients, glass panels, and glow button styles.
+- Refined existing pages only (no route restructuring): Navbar, Home, Product Listing, Product Details, Cart, Checkout, Admin Dashboard, Login/Admin Login, Product form, and Inventory table.
+- Aligned forms, card spacing, table styling, and action buttons to the uploaded design style while keeping existing components/routes.
+
+### Login issue fix explanation
+
+- Added backend auth diagnostics (controller + service logging) to trace login attempts and outcomes.
+- Normalized email lookup in `UserRepository` (`trim` + case-insensitive compare), which fixes failed logins due to casing/whitespace mismatches.
+- Kept compatibility for seeded plaintext passwords while still verifying hashed passwords correctly.
+- Confirmed JWT response contract includes `token`, `name`, `email`, and `role`, then reinforced frontend token persistence in `localStorage`.
+- Added frontend debug logs for login API requests/responses and auth state updates to ensure token flow is observable.
+- Fixed post-login redirects by role:
+  - Admin → `/admin/dashboard`
+  - User/Customer → `/`
+
+### Steps to test login
+
+1. Start backend and frontend.
+2. Open `http://localhost:5173/auth` for user login or `http://localhost:5173/admin` for admin login.
+3. Use the test credentials below.
+4. Verify browser `localStorage` contains:
+   - `glowvitra_token`
+   - `glowvitra_user`
+5. Verify redirect behavior:
+   - Admin redirects to `/admin/dashboard`
+   - User redirects to `/`
+
+Test credentials:
+
+Admin:  
+admin@glowvitra.com / Admin@123
+
+User:  
+user@glowvitra.com / User@123

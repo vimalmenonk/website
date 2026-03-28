@@ -16,17 +16,13 @@ function ProductListingPage() {
   );
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-3xl font-bold text-white">Shop Glowvitra</h1>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="input-base md:max-w-sm"
-          placeholder="Search product"
-        />
+    <div className="space-y-6">
+      <div className="panel-shell flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
+        <h1 className="section-title">Shop</h1>
+        <input value={query} onChange={(e) => setQuery(e.target.value)} className="input-base md:max-w-sm" placeholder="Search products" />
       </div>
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <p className="text-sm text-gray-400">Showing {filtered.length} of {products.length} products</p>
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {filtered.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

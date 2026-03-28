@@ -9,13 +9,14 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Glowvitra.Api.Services;
 
-public class AuthService(IUserRepository userRepository, IConfiguration configuration) : IAuthService
+public class AuthService(IUserRepository userRepository, IConfiguration configuration, ILogger<AuthService> logger) : IAuthService
 {
     private readonly PasswordHasher<User> _passwordHasher = new();
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
-        var existing = await userRepository.GetByEmailAsync(request.Email);
+        var email = request.Email.Trim();
+        var existing = await userRepository.GetByEmailAsync(email);
         if (existing is not null)
         {
             throw new InvalidOperationException("Email already registered.");
@@ -24,13 +25,14 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
         var role = request.Role is "Admin" or "Customer" ? request.Role : "Customer";
         var user = new User
         {
-            Name = request.Name,
-            Email = request.Email,
+            Name = request.Name.Trim(),
+            Email = email,
             Role = role
         };
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
         await userRepository.AddAsync(user);
+        logger.LogInformation("[Auth] User registered: {Email} ({Role})", user.Email, user.Role);
 
         var token = GenerateToken(user);
         return new AuthResponse(token, user.Name, user.Email, user.Role);
@@ -38,9 +40,11 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
 
     public async Task<AuthResponse?> LoginAsync(LoginRequest request)
     {
-        var user = await userRepository.GetByEmailAsync(request.Email);
+        var email = request.Email.Trim();
+        var user = await userRepository.GetByEmailAsync(email);
         if (user is null)
         {
+            logger.LogWarning("[Auth] Login failed for {Email}: user not found", email);
             return null;
         }
 
@@ -49,9 +53,11 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
 
         if (verify == PasswordVerificationResult.Failed && !isPlainTextSeedPassword)
         {
+            logger.LogWarning("[Auth] Login failed for {Email}: invalid password", email);
             return null;
         }
 
+        logger.LogInformation("[Auth] Login success: {Email} ({Role})", user.Email, user.Role);
         var token = GenerateToken(user);
         return new AuthResponse(token, user.Name, user.Email, user.Role);
     }
