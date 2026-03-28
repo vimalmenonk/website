@@ -12,19 +12,23 @@ function AdminDashboardPage() {
   }, []);
 
   const lowStock = inventory.filter((item) => item.stockQuantity < 15).length;
+  const inventoryValue = inventory.reduce((acc, item) => acc + item.stockQuantity, 0);
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+    <div className="space-y-7">
+      <h1 className="section-title">Admin Dashboard</h1>
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="glass-card p-5"><p className="text-gray-400">Total Products</p><p className="text-3xl font-bold">{products.length}</p></div>
-        <div className="glass-card p-5"><p className="text-gray-400">Low Stock Items</p><p className="text-3xl font-bold">{lowStock}</p></div>
-        <div className="glass-card p-5"><p className="text-gray-400">Tracked SKUs</p><p className="text-3xl font-bold">{inventory.length}</p></div>
+        <div className="panel-shell p-5"><p className="text-xs uppercase text-gray-400">Total Products</p><p className="text-3xl font-bold text-white">{products.length}</p></div>
+        <div className="panel-shell p-5"><p className="text-xs uppercase text-gray-400">Low Stock</p><p className="text-3xl font-bold text-amber-300">{lowStock}</p></div>
+        <div className="panel-shell p-5"><p className="text-xs uppercase text-gray-400">Units In Inventory</p><p className="text-3xl font-bold text-emerald-300">{inventoryValue}</p></div>
       </div>
-      <div className="glass-card flex flex-wrap gap-3 p-6">
-        <Link className="neon-btn" to="/admin/products">Manage Products</Link>
-        <Link className="neon-btn" to="/admin/products/new">Add Product</Link>
-        <Link className="neon-btn" to="/admin/inventory">Inventory</Link>
+      <div className="panel-shell space-y-3 p-6">
+        <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
+        <div className="flex flex-wrap gap-3">
+          <Link className="neon-btn" to="/admin/products">Manage Products</Link>
+          <Link className="neon-btn" to="/admin/products/new">Add Product</Link>
+          <Link className="neon-btn" to="/admin/inventory">Inventory</Link>
+        </div>
       </div>
     </div>
   );

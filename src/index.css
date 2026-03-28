@@ -11,7 +11,12 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at top, #111827 0%, #0b0b0f 35%);
+  background-color: #0b0b0f;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(59, 130, 246, 0.2), transparent 28%),
+    radial-gradient(circle at 82% 12%, rgba(168, 85, 247, 0.24), transparent 25%),
+    radial-gradient(circle at 50% 100%, rgba(37, 99, 235, 0.2), transparent 35%),
+    linear-gradient(145deg, #07070d 0%, #0b0b0f 55%, #100826 100%);
 }
 
 * {
@@ -19,15 +24,27 @@ body {
 }
 
 @layer components {
+  .panel-shell {
+    @apply rounded-2xl border border-white/10 bg-[#0e1122]/80 shadow-[0_8px_30px_rgba(2,6,23,0.65)] backdrop-blur-md;
+  }
+
   .glass-card {
-    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur;
+    @apply panel-shell;
   }
 
   .neon-btn {
-    @apply rounded-xl bg-neon px-4 py-2 font-semibold text-white shadow-neon transition-all duration-300 hover:scale-105 hover:shadow-[0_0_24px_rgba(59,130,246,0.7),0_0_34px_rgba(139,92,246,0.55)];
+    @apply rounded-lg border border-blue-400/70 bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#6d28d9] px-4 py-2 font-semibold text-white shadow-[0_0_14px_rgba(37,99,235,0.65)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_24px_rgba(59,130,246,0.95),0_0_35px_rgba(109,40,217,0.75)];
+  }
+
+  .neon-btn-soft {
+    @apply rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-gray-200 transition hover:border-blue-400/60 hover:text-blue-200;
   }
 
   .input-base {
-    @apply w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-gray-100 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40;
+    @apply w-full rounded-lg border border-white/15 bg-[#0b0f20]/90 px-4 py-2.5 text-sm text-gray-100 outline-none transition placeholder:text-gray-500 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/35;
+  }
+
+  .section-title {
+    @apply text-3xl font-semibold tracking-tight text-white;
   }
 }

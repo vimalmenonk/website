@@ -62,20 +62,23 @@ function AddEditProductPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-3xl font-bold text-white">{isEdit ? 'Edit Product' : 'Add Product'}</h1>
-      <form onSubmit={onSubmit} className="glass-card grid gap-4 p-6">
+    <div className="mx-auto max-w-4xl space-y-6">
+      <h1 className="section-title">{isEdit ? 'Edit Product' : 'Add New Product'}</h1>
+      <form onSubmit={onSubmit} className="panel-shell grid gap-4 p-6 md:grid-cols-2">
         <input className="input-base" placeholder="Product Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+        <input className="input-base" type="number" placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
         <select className="input-base" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: Number(e.target.value) })}>
           {categoryOptions.map((category) => (
             <option key={category.id} value={category.id}>{category.label}</option>
           ))}
         </select>
-        <input className="input-base" type="number" placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
-        <input className="input-base" type="number" placeholder="Stock" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required />
-        <input className="input-base" placeholder="Image URL" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} required />
-        <textarea className="input-base min-h-32" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
-        <button type="submit" className="neon-btn">{isEdit ? 'Save Changes' : 'Create Product'}</button>
+        <input className="input-base" type="number" placeholder="Stock Quantity" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required />
+        <input className="input-base md:col-span-2" placeholder="Image URL" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} required />
+        <textarea className="input-base min-h-36 md:col-span-2" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
+        <div className="md:col-span-2 flex justify-end gap-3">
+          <button type="button" className="neon-btn-soft" onClick={() => navigate('/admin/products')}>Cancel</button>
+          <button type="submit" className="neon-btn">{isEdit ? 'Save Product' : 'Add Product'}</button>
+        </div>
       </form>
     </div>
   );

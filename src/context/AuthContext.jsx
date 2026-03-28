@@ -21,14 +21,21 @@ export function AuthProvider({ children }) {
     if (user) {
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       setIsAdmin(user.role === 'Admin');
+      return;
     }
+
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    setIsAdmin(false);
   }, [user]);
 
   const login = async ({ email, password }) => {
+    console.log('[AuthContext] login request', { email });
     const response = await loginRequest({ email, password });
     const current = { name: response.name, email: response.email, role: response.role };
     localStorage.setItem(TOKEN_KEY, response.token);
     setUser(current);
+    console.log('[AuthContext] token stored and user set', { role: current.role });
     return current;
   };
 
@@ -42,9 +49,6 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setUser(null);
-    setIsAdmin(false);
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(TOKEN_KEY);
   };
 
   const value = useMemo(() => ({ user, isAdmin, login, signup, logout }), [user, isAdmin]);
