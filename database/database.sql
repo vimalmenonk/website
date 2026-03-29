@@ -21,7 +21,8 @@ CREATE TABLE dbo.Users (
     Name NVARCHAR(120) NOT NULL,
     Email NVARCHAR(255) NOT NULL UNIQUE,
     PasswordHash NVARCHAR(500) NOT NULL,
-    Role NVARCHAR(20) NOT NULL CONSTRAINT CK_Users_Role CHECK (Role IN ('Admin', 'Customer'))
+    Role NVARCHAR(20) NOT NULL CONSTRAINT CK_Users_Role CHECK (Role IN ('Admin', 'Customer')),
+    IsActive BIT NOT NULL CONSTRAINT DF_Users_IsActive DEFAULT (1)
 );
 GO
 
@@ -81,10 +82,10 @@ CREATE TABLE dbo.OrderItems (
 GO
 
 SET IDENTITY_INSERT dbo.Users ON;
-INSERT INTO dbo.Users (Id, Name, Email, PasswordHash, Role)
+INSERT INTO dbo.Users (Id, Name, Email, PasswordHash, Role, IsActive)
 VALUES
-    (1, 'Admin', 'admin@glowvitra.com', 'Admin@123', 'Admin'),
-    (2, 'User', 'user@glowvitra.com', 'User@123', 'Customer');
+    (1, 'Admin', 'admin@glowvitra.com', 'AQAAAAEAACcQAAAAEAARIjNEVWZ3iJmqu8zd7v/f6R+0Uv4II41W/vZi+BI0CqhRndcGaAYLSRtRQFeTMg==', 'Admin', 1),
+    (2, 'User', 'user@glowvitra.com', 'AQAAAAEAACcQAAAAEP/u3cy7qpmId2ZVRDMiEQAqTEHho7pGTiOzTiFH/XQMF91aURouAI0kAE2C5gsChg==', 'Customer', 1);
 SET IDENTITY_INSERT dbo.Users OFF;
 GO
 

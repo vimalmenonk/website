@@ -15,7 +15,7 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
-        var email = request.Email.Trim();
+        var email = request.Email.Trim().ToLowerInvariant();
         var existing = await userRepository.GetByEmailAsync(email);
         if (existing is not null)
         {
@@ -27,20 +27,21 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
         {
             Name = request.Name.Trim(),
             Email = email,
-            Role = role
+            Role = role,
+            IsActive = true
         };
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
         await userRepository.AddAsync(user);
         logger.LogInformation("[Auth] User registered: {Email} ({Role})", user.Email, user.Role);
 
-        var token = GenerateToken(user);
-        return new AuthResponse(token, user.Name, user.Email, user.Role);
+        var (token, expiresAt) = GenerateToken(user);
+        return new AuthResponse(token, user.Name, user.Email, user.Role, expiresAt);
     }
 
     public async Task<AuthResponse?> LoginAsync(LoginRequest request)
     {
-        var email = request.Email.Trim();
+        var email = request.Email.Trim().ToLowerInvariant();
         var user = await userRepository.GetByEmailAsync(email);
         if (user is null)
         {
@@ -48,33 +49,41 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
             return null;
         }
 
-        var verify = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-        var isPlainTextSeedPassword = user.PasswordHash == request.Password;
+        if (!user.IsActive)
+        {
+            logger.LogWarning("[Auth] Login failed for {Email}: account inactive", email);
+            throw new UnauthorizedAccessException("Account is inactive. Please contact support.");
+        }
 
-        if (verify == PasswordVerificationResult.Failed && !isPlainTextSeedPassword)
+        var verify = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+
+        if (verify == PasswordVerificationResult.Failed)
         {
             logger.LogWarning("[Auth] Login failed for {Email}: invalid password", email);
             return null;
         }
 
         logger.LogInformation("[Auth] Login success: {Email} ({Role})", user.Email, user.Role);
-        var token = GenerateToken(user);
-        return new AuthResponse(token, user.Name, user.Email, user.Role);
+        var (token, expiresAt) = GenerateToken(user);
+        return new AuthResponse(token, user.Name, user.Email, user.Role, expiresAt);
     }
 
-    private string GenerateToken(User user)
+    private (string Token, DateTime ExpiresAtUtc) GenerateToken(User user)
     {
         var jwtKey = configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
         var issuer = configuration["Jwt:Issuer"] ?? "Glowvitra.Api";
         var audience = configuration["Jwt:Audience"] ?? "Glowvitra.Client";
 
+        var expiresAt = DateTime.UtcNow.AddHours(8);
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.Name),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(ClaimTypes.Role, user.Role),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -84,10 +93,11 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
             issuer,
             audience,
             claims,
-            expires: DateTime.UtcNow.AddHours(8),
+            notBefore: DateTime.UtcNow,
+            expires: expiresAt,
             signingCredentials: creds
         );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
     }
 }

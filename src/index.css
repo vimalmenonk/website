@@ -28,6 +28,14 @@ body {
     @apply rounded-2xl border border-white/10 bg-[#0e1122]/80 shadow-[0_8px_30px_rgba(2,6,23,0.65)] backdrop-blur-md;
   }
 
+  .admin-shell {
+    @apply rounded-3xl border border-violet-400/15 bg-[linear-gradient(180deg,#070b1c_0%,#090d24_60%,#080915_100%)] p-2 shadow-[0_0_60px_rgba(76,29,149,0.25)];
+  }
+
+  .admin-panel {
+    @apply rounded-2xl border border-violet-300/15 bg-[#0b1026]/85 shadow-[0_8px_30px_rgba(2,6,23,0.75)] backdrop-blur-md;
+  }
+
   .glass-card {
     @apply panel-shell;
   }
@@ -37,7 +45,7 @@ body {
   }
 
   .neon-btn-soft {
-    @apply rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-gray-200 transition hover:border-blue-400/60 hover:text-blue-200;
+    @apply rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-gray-200 transition hover:border-blue-400/60 hover:text-blue-200 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .input-base {
