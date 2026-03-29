@@ -20,7 +20,7 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
         catch (InvalidOperationException ex)
         {
             logger.LogWarning("[AuthController] Register rejected for {Email}: {Message}", request.Email, ex.Message);
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new AuthErrorResponse(ex.Message, "email_exists"));
         }
     }
 
@@ -28,14 +28,23 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         logger.LogInformation("[AuthController] Login attempt for {Email}", request.Email);
-        var response = await authService.LoginAsync(request);
-        if (response is null)
-        {
-            logger.LogWarning("[AuthController] Login unauthorized for {Email}", request.Email);
-            return Unauthorized(new { message = "Invalid email or password." });
-        }
 
-        logger.LogInformation("[AuthController] Login successful for {Email} ({Role})", response.Email, response.Role);
-        return Ok(response);
+        try
+        {
+            var response = await authService.LoginAsync(request);
+            if (response is null)
+            {
+                logger.LogWarning("[AuthController] Login unauthorized for {Email}", request.Email);
+                return Unauthorized(new AuthErrorResponse("Invalid email or password.", "invalid_credentials"));
+            }
+
+            logger.LogInformation("[AuthController] Login successful for {Email} ({Role})", response.Email, response.Role);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning("[AuthController] Login blocked for {Email}: {Message}", request.Email, ex.Message);
+            return Unauthorized(new AuthErrorResponse(ex.Message, "inactive_user"));
+        }
     }
 }

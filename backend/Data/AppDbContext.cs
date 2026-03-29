@@ -1,4 +1,5 @@
 using Glowvitra.Api.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Glowvitra.Api.Data;
@@ -22,6 +23,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<User>()
             .Property(u => u.Role)
             .HasMaxLength(20);
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.IsActive)
+            .HasDefaultValue(true);
 
         modelBuilder.Entity<Inventory>()
             .HasKey(i => i.ProductId);
@@ -76,24 +81,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new Category { Id = 3, Name = "Cozy" }
         );
 
-        modelBuilder.Entity<User>().HasData(
-            new User
-            {
-                Id = 1,
-                Name = "Admin",
-                Email = "admin@glowvitra.com",
-                PasswordHash = "Admin@123",
-                Role = "Admin"
-            },
-            new User
-            {
-                Id = 2,
-                Name = "User",
-                Email = "user@glowvitra.com",
-                PasswordHash = "User@123",
-                Role = "Customer"
-            }
-        );
+        var passwordHasher = new PasswordHasher<User>();
+        var adminUser = new User
+        {
+            Id = 1,
+            Name = "Admin",
+            Email = "admin@glowvitra.com",
+            Role = "Admin",
+            IsActive = true
+        };
+        adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, "Admin@123");
+
+        var customerUser = new User
+        {
+            Id = 2,
+            Name = "User",
+            Email = "user@glowvitra.com",
+            Role = "Customer",
+            IsActive = true
+        };
+        customerUser.PasswordHash = passwordHasher.HashPassword(customerUser, "User@123");
+
+        modelBuilder.Entity<User>().HasData(adminUser, customerUser);
 
         modelBuilder.Entity<Product>().HasData(
             new Product

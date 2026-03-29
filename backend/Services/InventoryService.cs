@@ -8,7 +8,7 @@ public class InventoryService(IInventoryRepository inventoryRepository, IProduct
 {
     public async Task<List<InventoryResponse>> GetAllAsync() =>
         (await inventoryRepository.GetAllAsync())
-        .Select(i => new InventoryResponse(i.ProductId, i.Product?.Name ?? string.Empty, i.StockQuantity))
+        .Select(i => new InventoryResponse(i.ProductId, i.Product?.Name ?? string.Empty, i.Product?.Price ?? 0, i.StockQuantity))
         .ToList();
 
     public async Task<bool> UpdateAsync(InventoryUpdateRequest request)

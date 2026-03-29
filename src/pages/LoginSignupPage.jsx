@@ -21,11 +21,9 @@ function LoginSignupPage() {
         current = await login({ email: form.email, password: form.password });
       }
 
-      console.log('[Auth] login/signup success', { email: current.email, role: current.role });
       navigate(current.role === 'Admin' ? '/admin/dashboard' : '/');
     } catch (authError) {
-      console.error('[Auth] login/signup failed', authError?.response?.data || authError?.message || authError);
-      setError('Authentication failed. Please verify your credentials.');
+      setError(authError?.response?.data?.message || 'Authentication failed. Please verify your credentials.');
     }
   };
 

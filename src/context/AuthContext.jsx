@@ -5,12 +5,25 @@ const AuthContext = createContext(null);
 
 const USER_KEY = 'glowvitra_user';
 const TOKEN_KEY = 'glowvitra_token';
+const TOKEN_EXPIRY_KEY = 'glowvitra_token_expiry';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const token = localStorage.getItem(TOKEN_KEY);
+    const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
+
+    if (!raw || !token || !expiry) return null;
+    if (new Date(expiry).getTime() <= Date.now()) {
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(TOKEN_EXPIRY_KEY);
+      return null;
+    }
+
+    return JSON.parse(raw);
   });
+
   const [isAdmin, setIsAdmin] = useState(() => {
     const raw = localStorage.getItem(USER_KEY);
     if (!raw) return false;
@@ -26,16 +39,16 @@ export function AuthProvider({ children }) {
 
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_EXPIRY_KEY);
     setIsAdmin(false);
   }, [user]);
 
   const login = async ({ email, password }) => {
-    console.log('[AuthContext] login request', { email });
     const response = await loginRequest({ email, password });
     const current = { name: response.name, email: response.email, role: response.role };
     localStorage.setItem(TOKEN_KEY, response.token);
+    localStorage.setItem(TOKEN_EXPIRY_KEY, response.expiresAtUtc);
     setUser(current);
-    console.log('[AuthContext] token stored and user set', { role: current.role });
     return current;
   };
 
@@ -43,6 +56,7 @@ export function AuthProvider({ children }) {
     const response = await signupRequest({ name, email, password, role: 'Customer' });
     const current = { name: response.name, email: response.email, role: response.role };
     localStorage.setItem(TOKEN_KEY, response.token);
+    localStorage.setItem(TOKEN_EXPIRY_KEY, response.expiresAtUtc);
     setUser(current);
     return current;
   };
