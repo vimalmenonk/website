@@ -79,6 +79,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseCors("GlowvitraCors");
 app.UseAuthentication();
 app.UseAuthorization();

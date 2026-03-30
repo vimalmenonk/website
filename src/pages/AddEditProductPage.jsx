@@ -19,6 +19,7 @@ function AddEditProductPage() {
     price: 0,
     categoryId: 1,
     imageUrl: '',
+    imageFile: null,
     stockQuantity: 0,
   });
 
@@ -42,23 +43,34 @@ function AddEditProductPage() {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      name: form.name,
-      description: form.description,
-      price: Number(form.price),
-      categoryId: Number(form.categoryId),
-      imageUrl: form.imageUrl,
-    };
-
     if (isEdit) {
+      const payload = {
+        name: form.name,
+        description: form.description,
+        price: Number(form.price),
+        categoryId: Number(form.categoryId),
+        imageUrl: form.imageUrl,
+      };
+
       await updateProduct(id, payload);
       await updateInventory(Number(id), Number(form.stockQuantity));
     } else {
-      const created = await createProduct(payload);
-      await updateInventory(created.id, Number(form.stockQuantity));
+      const created = await createProduct({
+        name: form.name,
+        description: form.description,
+        price: Number(form.price),
+        categoryId: Number(form.categoryId),
+        stockQuantity: Number(form.stockQuantity),
+        imageFile: form.imageFile,
+        imageUrl: form.imageUrl,
+      });
+
+      if (!form.imageFile) {
+        await updateInventory(created.id, Number(form.stockQuantity));
+      }
     }
 
-    navigate('/admin/products');
+    navigate('/admin/inventory');
   };
 
   return (
@@ -73,10 +85,13 @@ function AddEditProductPage() {
           ))}
         </select>
         <input className="input-base" type="number" placeholder="Stock Quantity" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required />
-        <input className="input-base md:col-span-2" placeholder="Image URL" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} required />
+        <input className="input-base md:col-span-2" placeholder="Image URL (optional when uploading file)" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+        {!isEdit && (
+          <input className="input-base md:col-span-2" type="file" accept="image/*" onChange={(e) => setForm({ ...form, imageFile: e.target.files?.[0] ?? null })} />
+        )}
         <textarea className="input-base min-h-36 md:col-span-2" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
         <div className="md:col-span-2 flex justify-end gap-3">
-          <button type="button" className="neon-btn-soft" onClick={() => navigate('/admin/products')}>Cancel</button>
+          <button type="button" className="neon-btn-soft" onClick={() => navigate('/admin/inventory')}>Cancel</button>
           <button type="submit" className="neon-btn">{isEdit ? 'Save Product' : 'Add Product'}</button>
         </div>
       </form>
