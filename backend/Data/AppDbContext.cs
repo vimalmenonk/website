@@ -29,6 +29,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasDefaultValue(true);
 
         modelBuilder.Entity<Inventory>()
+            .ToTable("Inventory");
+
+        modelBuilder.Entity<Inventory>()
             .HasKey(i => i.ProductId);
 
         modelBuilder.Entity<Inventory>()
