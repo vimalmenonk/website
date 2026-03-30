@@ -7,7 +7,7 @@ namespace Glowvitra.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController(IProductService productService) : ControllerBase
+public class ProductsController(IProductService productService, IInventoryService inventoryService, IWebHostEnvironment env) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
@@ -23,9 +23,35 @@ public class ProductsController(IProductService productService) : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Create([FromBody] ProductRequest request)
+    [RequestSizeLimit(10_000_000)]
+    public async Task<IActionResult> Create([FromForm] ProductCreateRequest request)
     {
-        var product = await productService.CreateAsync(request);
+        var imageUrl = request.ImageUrl?.Trim() ?? string.Empty;
+
+        if (request.ImageFile is not null)
+        {
+            var uploadsDir = Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"), "uploads");
+            Directory.CreateDirectory(uploadsDir);
+
+            var extension = Path.GetExtension(request.ImageFile.FileName);
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var fullPath = Path.Combine(uploadsDir, fileName);
+
+            await using var stream = System.IO.File.Create(fullPath);
+            await request.ImageFile.CopyToAsync(stream);
+
+            imageUrl = $"/uploads/{fileName}";
+        }
+
+        var product = await productService.CreateAsync(new ProductRequest(
+            request.Name,
+            request.Description,
+            request.Price,
+            request.CategoryId,
+            imageUrl));
+
+        await inventoryService.UpdateAsync(new InventoryUpdateRequest(product.Id, request.StockQuantity));
+
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
 

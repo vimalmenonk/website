@@ -38,6 +38,11 @@ export async function fetchProductById(id) {
   return mapProduct(data);
 }
 
+export async function fetchDashboardSummary() {
+  const { data } = await api.get('/dashboard/summary');
+  return data;
+}
+
 export async function login(payload) {
   console.log('[API] POST /auth/login', { email: payload.email, url: `${API_BASE_URL}/auth/login` });
   const { data } = await api.post('/auth/login', payload);
@@ -89,7 +94,27 @@ export async function updateInventory(productId, stockQuantity) {
 }
 
 export async function createProduct(payload) {
-  const { data } = await api.post('/products', payload);
+  const formData = new FormData();
+  formData.append('name', payload.name);
+  formData.append('description', payload.description);
+  formData.append('price', String(payload.price));
+  formData.append('categoryId', String(payload.categoryId));
+  formData.append('stockQuantity', String(payload.stockQuantity ?? 0));
+
+  if (payload.imageFile) {
+    formData.append('imageFile', payload.imageFile);
+  }
+
+  if (payload.imageUrl) {
+    formData.append('imageUrl', payload.imageUrl);
+  }
+
+  const { data } = await api.post('/products', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
   return mapProduct(data);
 }
 
